@@ -1,0 +1,29 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Message Title...</title>
+
+    <style></style>
+
+
+
+    <script>
+
+        function escapeHTML(text) {
+            return text.replace(/[&<>]/g, (ch) => {
+                return {'&':'&amp;', '>': '&gt;', '<': '&lt;'}[ch];
+            })
+        }
+
+        function showStatus() {
+          
+        }
+    </script>
+</head>
+<body onload="showStatus();">
+    Firebase Admin Custom Token example
+
+
+</body>
+</html>
