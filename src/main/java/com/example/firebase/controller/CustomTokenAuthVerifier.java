@@ -75,7 +75,12 @@ public class CustomTokenAuthVerifier implements CustomTokenVerifier  {
                 PublicKey publicKey = getPublicKey(entry);
                 logger.info(methodName+"public key string is:"+publicKey.toString());
 
-                
+                try { 
+                    Claims claims = Jwts.parser().setSigningKey(getPublicKeyAsAString(entry).getBytes("UTF-8")).parseClaimsJws(token).getBody();
+                    logger.info("claims =" + claims.toString());
+                     } catch (Exception e) {
+                          logger.error(methodName+"step 1 "+e.getMessage());
+                        }
                 // validate claim set
                 Jwts.parser().setSigningKey(publicKey).parse(token);
 
@@ -135,6 +140,36 @@ public class CustomTokenAuthVerifier implements CustomTokenVerifier  {
         return cert.getPublicKey();
     }
 
+
+    /**
+     *
+     * @param entry
+     * @return
+     * @throws GeneralSecurityException
+     */
+    private String getPublicKeyAsAString(Map.Entry<String, JsonElement> entry) throws GeneralSecurityException, IOException {
+    
+        String publicKeyPem = entry.getValue().getAsString();
+
+        logger.info("before:="+publicKeyPem);
+
+        publicKeyPem = publicKeyPem.replaceAll("-----BEGIN (.*)-----", "")
+                .replaceAll("\n-----END CERTIFICATE-----\n\n\n","")
+                .replaceAll("\n-----END (.*)----", "")
+                .replaceAll("-----END (.*)----", "")
+                .replaceAll("\r\n", "")
+                .replaceAll("\n", "")
+                .replaceAll("=\n\n","=")
+                //.replaceAll(" ", "")
+                .trim();
+
+        logger.info("after:="+publicKeyPem);
+
+        // generate x509 cert
+        publicKeyPem = entry.getValue().getAsString();
+        
+        return publicKeyPem;
+    }
 
     
 

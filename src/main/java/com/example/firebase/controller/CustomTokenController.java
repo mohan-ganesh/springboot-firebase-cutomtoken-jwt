@@ -64,7 +64,7 @@ public class CustomTokenController {
         
        
         @RequestMapping(value = "/v1/token/new", method = RequestMethod.POST, produces = MediaType.APPLICATION_JSON_VALUE)
-        public ResponseEntity<String> createNewToken(@RequestBody NewToken token) {
+        public String createNewToken(@RequestBody NewToken token) {
                 
                 String customToken="";
                 try {
@@ -91,12 +91,12 @@ public class CustomTokenController {
                 }
 
                 logger.info("createNewToken() - end.");
-                return  ResponseEntity.ok(customToken);
+                return  customToken;
         }
 
 
         @RequestMapping(value = "/v1/token/verify", method = RequestMethod.POST, produces = MediaType.APPLICATION_JSON_VALUE)
-        public ResponseEntity<String> verifyToken(@RequestBody NewToken token) {
+        public String verifyToken(@RequestBody NewToken token) {
                 
                 String uid="";
                 try {
@@ -118,13 +118,15 @@ public class CustomTokenController {
                 // [END custom_token]
                 } catch (GeneralSecurityException gse) {
                         logger.error("verifyToken()",gse);
+                        uid = gse.getMessage();
                 }
                  catch (IOException ioe) {
                         logger.error("verifyToken()",ioe);
+                        uid = ioe.getMessage();
                 }
                 
                 logger.info("verifyToken() - end.");
-                return  ResponseEntity.ok(uid);
+                return uid;
         }
 
 
