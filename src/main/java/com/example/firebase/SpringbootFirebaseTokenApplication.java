@@ -16,7 +16,7 @@ import org.apache.commons.logging.LogFactory;
 @SpringBootApplication
 public class SpringbootFirebaseTokenApplication {
 
-	public static void main(String[] args) {
+	public static void main(String[] args) throws Exception{
 
 		Log logger = LogFactory.getLog(SpringbootFirebaseTokenApplication.class);
 
@@ -33,11 +33,12 @@ public class SpringbootFirebaseTokenApplication {
 				.build();
 
 				FirebaseApp.initializeApp(options);
+				//FirebaseApp.initializeApp();
 
 				logger.info("Initialize the Firebase App is complete.....");
 
 			} catch (Exception e) {
-			e.printStackTrace();
+			 	throw new Exception("App is not initialized gracefully.",e);
 			}
 
 		}
