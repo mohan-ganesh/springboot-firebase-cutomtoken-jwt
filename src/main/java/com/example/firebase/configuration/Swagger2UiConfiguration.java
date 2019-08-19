@@ -13,14 +13,14 @@ import springfox.documentation.swagger2.annotations.EnableSwagger2;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 
-import com.google.firebase.FirebaseApp;
+
 
 @Configuration
 @EnableSwagger2
 public class Swagger2UiConfiguration extends WebMvcConfigurerAdapter
 {
 
-    private static final Log logger = LogFactory.getLog(Swagger2UiConfiguration.class);
+    //private static final Log logger = LogFactory.getLog(Swagger2UiConfiguration.class);
 
     @Bean
     public Docket api() {
@@ -28,12 +28,7 @@ public class Swagger2UiConfiguration extends WebMvcConfigurerAdapter
         //Register the controllers to swagger
         //Also it is configuring the Swagger Docket
 
-        try {
-            logger.debug("Firebase app is initialized....");
-            FirebaseApp.initializeApp();
-        } catch (Exception e) {
-           logger.error("Swagger2UiConfiguration",e);
-        }
+        
         
         return new Docket(DocumentationType.SWAGGER_2).select()
                 // .apis(RequestHandlerSelectors.any())

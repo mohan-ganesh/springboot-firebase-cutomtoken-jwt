@@ -32,6 +32,8 @@ import io.jsonwebtoken.Jwts;
 
 import io.jsonwebtoken.Claims;
 
+ 
+
 
 //@Service
 public class CustomTokenAuthVerifier implements CustomTokenVerifier  {
@@ -51,8 +53,11 @@ public class CustomTokenAuthVerifier implements CustomTokenVerifier  {
 
         final String methodName = "verifyToken() - ";
 
+
         logger.info(methodName+"start.");
 
+        
+   
         token = token.toString().trim();
         // get public keys
         JsonObject publicKeys = getPublicKeysJson();
@@ -73,16 +78,17 @@ public class CustomTokenAuthVerifier implements CustomTokenVerifier  {
 
                 // get public key
                 PublicKey publicKey = getPublicKey(entry);
-                logger.info(methodName+"public key string is:"+publicKey.toString());
+               // logger.info(methodName+"public key string is="+publicKey.toString());
 
-                try { 
-                    Claims claims = Jwts.parser().setSigningKey(getPublicKeyAsAString(entry).getBytes("UTF-8")).parseClaimsJws(token).getBody();
-                    logger.info("claims =" + claims.toString());
-                     } catch (Exception e) {
-                          logger.error(methodName+"step 1 "+e.getMessage());
-                        }
+               
+
                 // validate claim set
-                Jwts.parser().setSigningKey(publicKey).parse(token);
+                try { 
+                    Jwts.parser().setSigningKey(publicKey).parse(token);
+                    logger.info("passed-1");
+                } catch (Exception e) { 
+                    logger.error(methodName,e);
+                }
 
                 Claims claims =  Jwts.parser().setSigningKey(publicKey).parseClaimsJws(token).getBody();
 
@@ -117,21 +123,16 @@ public class CustomTokenAuthVerifier implements CustomTokenVerifier  {
      */
     private PublicKey getPublicKey(Map.Entry<String, JsonElement> entry) throws GeneralSecurityException, IOException {
     
-        String publicKeyPem = entry.getValue().getAsString();
+        String publicKeyPem = entry.getValue().getAsString()
+        .replaceAll("-----BEGIN (.*)-----", "")
+        .replaceAll("-----END (.*)----", "")
+        .replaceAll("\r\n", "")
+        .replaceAll("\n", "")
+        .trim();
 
-        logger.info("before:="+publicKeyPem);
+        logger.info(publicKeyPem);
 
-        publicKeyPem = publicKeyPem.replaceAll("-----BEGIN (.*)-----", "")
-                .replaceAll("\n-----END CERTIFICATE-----\n\n\n","")
-                .replaceAll("\n-----END (.*)----", "")
-                .replaceAll("-----END (.*)----", "")
-                .replaceAll("\r\n", "")
-                .replaceAll("\n", "")
-                .replaceAll("=\n\n","=")
-                //.replaceAll(" ", "")
-                .trim();
-
-        logger.info("after:="+publicKeyPem);
+       
 
         // generate x509 cert
         InputStream inputStream = new ByteArrayInputStream(entry.getValue().getAsString().getBytes("UTF-8"));
@@ -141,35 +142,7 @@ public class CustomTokenAuthVerifier implements CustomTokenVerifier  {
     }
 
 
-    /**
-     *
-     * @param entry
-     * @return
-     * @throws GeneralSecurityException
-     */
-    private String getPublicKeyAsAString(Map.Entry<String, JsonElement> entry) throws GeneralSecurityException, IOException {
-    
-        String publicKeyPem = entry.getValue().getAsString();
-
-        logger.info("before:="+publicKeyPem);
-
-        publicKeyPem = publicKeyPem.replaceAll("-----BEGIN (.*)-----", "")
-                .replaceAll("\n-----END CERTIFICATE-----\n\n\n","")
-                .replaceAll("\n-----END (.*)----", "")
-                .replaceAll("-----END (.*)----", "")
-                .replaceAll("\r\n", "")
-                .replaceAll("\n", "")
-                .replaceAll("=\n\n","=")
-                //.replaceAll(" ", "")
-                .trim();
-
-        logger.info("after:="+publicKeyPem);
-
-        // generate x509 cert
-        publicKeyPem = entry.getValue().getAsString();
-        
-        return publicKeyPem;
-    }
+   
 
     
 

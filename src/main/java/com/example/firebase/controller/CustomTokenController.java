@@ -3,7 +3,7 @@ package com.example.firebase.controller;
 //import org.springframework.web.bind.annotation.*;
 import java.util.Date;
 
-import com.highmarkhealth.diginn.pojo.NewToken;
+import com.example.firebase.pojo.NewToken;
 
 //import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.RequestMapping;
@@ -12,6 +12,7 @@ import org.springframework.web.bind.annotation.RequestMethod;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.ResponseBody;
 import org.springframework.http.ResponseEntity;
+import org.springframework.boot.autoconfigure.info.ProjectInfoProperties.Build;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
 import org.apache.commons.logging.Log;
@@ -24,14 +25,13 @@ import io.swagger.annotations.ApiOperation;
 import io.swagger.annotations.ApiResponse;
 import io.swagger.annotations.ApiResponses;
 
-import org.springframework.cloud.gcp.pubsub.PubSubAdmin;
-import org.springframework.cloud.gcp.pubsub.core.PubSubTemplate;
+
 
 import com.google.firebase.auth.FirebaseAuth;
 import com.google.firebase.auth.FirebaseToken;
 import com.google.firebase.FirebaseApp;
 
-import com.google.cloud.pubsub.v1.Subscriber;
+
 import java.util.ArrayList;
 import com.google.firebase.auth.FirebaseAuthException; 
 
@@ -64,7 +64,7 @@ public class CustomTokenController {
         
        
         @RequestMapping(value = "/v1/token/new", method = RequestMethod.POST, produces = MediaType.APPLICATION_JSON_VALUE)
-        public String createNewToken(@RequestBody NewToken token) {
+        public ResponseEntity<String> createNewToken(@RequestBody NewToken token) {
                 
                 String customToken="";
                 try {
@@ -81,6 +81,9 @@ public class CustomTokenController {
 
                  customToken = FirebaseAuth.getInstance().createCustomTokenAsync(uid).get();
                  logger.info("Token for uid "+uid+" and token is "+ customToken);
+
+               
+                
                 // Send token back to client
                 // [END custom_token]
                 } catch (InterruptedException ie) {
@@ -91,14 +94,14 @@ public class CustomTokenController {
                 }
 
                 logger.info("createNewToken() - end.");
-                return  customToken;
+                return  ResponseEntity.ok(customToken );
         }
 
 
         @RequestMapping(value = "/v1/token/verify", method = RequestMethod.POST, produces = MediaType.APPLICATION_JSON_VALUE)
-        public String verifyToken(@RequestBody NewToken token) {
+        public ResponseEntity<String> verifyToken(@RequestBody NewToken token) {
                 
-                String uid="";
+                            String uid="";
                 try {
                 logger.info("verifyToken() - start.");
                 
@@ -110,7 +113,10 @@ public class CustomTokenController {
 
                 CustomTokenAuthVerifier authVerifier = new CustomTokenAuthVerifier();
 
+               
                 authVerifier.verifyToken(token.getToken());
+
+               
 
                 logger.info("Token for uid "+uid+" and token is "+token.getToken());
 
@@ -118,18 +124,67 @@ public class CustomTokenController {
                 // [END custom_token]
                 } catch (GeneralSecurityException gse) {
                         logger.error("verifyToken()",gse);
-                        uid = gse.getMessage();
                 }
                  catch (IOException ioe) {
                         logger.error("verifyToken()",ioe);
-                        uid = ioe.getMessage();
                 }
                 
                 logger.info("verifyToken() - end.");
-                return uid;
+                return  ResponseEntity.ok(uid);
         }
 
 
+
+        @RequestMapping(value = "/v1/token/genandverify", method = RequestMethod.POST, produces = MediaType.APPLICATION_JSON_VALUE)
+        public ResponseEntity<String> generateAndVerifyToken(@RequestBody NewToken token) {
+                
+                 String customToken="";
+                 boolean verifyStatus = false;
+                 StringBuilder response = new StringBuilder();
+                try {
+                logger.info("verifyToken() - start.");
+                
+                if (null != token) {
+                        Assert.notNull(token.getToken(),"Token name is required value.");
+                }                 
+
+               
+                
+                // [START custom_token]
+                String uid = token.getToken();
+
+                //FirebaseApp.initializeApp();
+
+                 customToken = FirebaseAuth.getInstance().createCustomTokenAsync(uid).get();
+                 response.append("{\"token\":\"" + customToken+"\" "  );
+                 logger.info("Token for uid "+uid+" and token is "+ customToken);
+
+                CustomTokenAuthVerifier authVerifier = new CustomTokenAuthVerifier();
+
+              
+                verifyStatus = authVerifier.verifyToken(customToken);
+                
+
+                // Send token back to client
+                // [END custom_token]
+                } catch (GeneralSecurityException gse) {
+                        logger.error("verifyToken()",gse);
+                }
+                 catch (IOException ioe) {
+                        logger.error("verifyToken()",ioe);
+                } catch (InterruptedException iee) {
+                        
+                        logger.error("verifyToken()",iee);
+                } catch (ExecutionException ee) {
+                        logger.error("verifyToken()",ee);
+                }
+
+                response.append(",\"status\":\"" + verifyStatus+"\" "  );
+                response.append(" }");
+                
+                logger.info("verifyToken() - end.");
+                return  ResponseEntity.ok(response.toString());
+        }
 
        
 }

@@ -1,4 +1,4 @@
-package com.highmarkhealth.diginn.pojo;
+package com.example.firebase.pojo;
 
 import java.io.Serializable;
 
